@@ -30,8 +30,8 @@ You can also check the effect on the version using the following command (note t
 
 ```bash
 bump-my-version show-bump
-0.1.0-260420 ── bump ─┬─ major ─── 1.0.0-26421
-                      ├─ minor ─── 0.2.0-26421
-                      ├─ patch ─── 0.1.1-26421
-                      ╰─ release ─ 0.1.0-26421
+0.1.0-260420 ── bump ─┬─ major ─── 1.0.0-260421
+                      ├─ minor ─── 0.2.0-260421
+                      ├─ patch ─── 0.1.1-260421
+                      ╰─ release ─ 0.1.0-260421
 ```
