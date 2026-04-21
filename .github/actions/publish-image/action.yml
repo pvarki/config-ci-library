@@ -1,0 +1,120 @@
+name: "Publish Docker Image"
+description: "Build and push to GHCR & Docker Hub; mirror to ACR"
+
+inputs:
+  image-name:
+    description: "Image name without registry (e.g. pvarki/my-service)"
+    required: true
+  context:
+    description: "Docker build context path"
+    required: false
+    default: "."
+  dockerfile:
+    description: "Path to Dockerfile"
+    required: false
+    default: "Dockerfile"
+  platforms:
+    description: "Target platforms"
+    required: false
+    default: "linux/amd64,linux/arm64"
+  dockerhub-username:
+    description: "Docker Hub username"
+    required: true
+  dockerhub-token:
+    description: "Docker Hub token"
+    required: true
+  github-token:
+    required: true
+    description: "Token to access GitHub"
+  acr-repo:
+    description: "ACR hostname"
+    required: true
+  acr-username:
+    description: "ACR username"
+    required: true
+  acr-token:
+    description: "ACR token"
+    required: true
+
+outputs:
+  tags:
+    description: "Newline-separated list of tags pushed to GHCR"
+    value: ${{ steps.meta.outputs.tags }}
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Log in to ACR
+      uses: docker/login-action@v4
+      with:
+        registry: ${{ inputs.acr-repo }}
+        username: ${{ inputs.acr-username }}
+        password: ${{ inputs.acr-token }}
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Read version and compute dates
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
+        BUILD_DATE=$(date -u +%Y%m%dT%H%M)
+        REF_NO_SLASHES=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
+        echo "ref_no_slashes=${REF_NO_SLASHES}" >> $GITHUB_OUTPUT
+
+    - name: Generate image metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ghcr.io/${{ inputs.image-name }}
+          docker.io/${{ inputs.image-name }}
+        tags: |
+          type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }}
+          type=raw,value=${{ steps.version.outputs.version }}
+          type=raw,value=${{ steps.version.outputs.version }}-pr${{ github.event.number }}-${{ steps.version.outputs.build_date }},enable=${{ github.event_name == 'pull_request' }}
+          type=raw,value=${{ steps.version.outputs.version }}-pr${{ github.event.number }},enable=${{ github.event_name == 'pull_request' }}
+          type=raw,value=${{ steps.version.outputs.ref_no_slashes }}
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push to GHCR
+      uses: docker/build-push-action@v7
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        platforms: ${{ inputs.platforms }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Mirror to ACR
+      shell: bash
+      run: |
+        GHCR_BASE="ghcr.io/${{ inputs.image-name }}"
+        ACR_BASE="${{ inputs.acr-repo }}/${{ inputs.image-name }}"
+        while IFS= read -r TAG; do
+          ACR_TAG="${TAG/$GHCR_BASE/$ACR_BASE}"
+          echo "Mirroring $TAG -> $ACR_TAG"
+          docker buildx imagetools create --tag "$ACR_TAG" "$TAG"
+        done <<< "${{ steps.meta.outputs.tags }}"

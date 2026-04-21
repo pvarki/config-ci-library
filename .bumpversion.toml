@@ -22,4 +22,4 @@ post_commit_hooks = []
 allow_shell_hooks = true
 
 [tool.bumpversion.parts.release]
-calver_format = "{YY}{0M}{0D}"
+calver_format = "{0Y}{0M}{0D}"
