@@ -1,0 +1,21 @@
+name: Validate bumpversion
+description: Checks .bumpversion.toml exists, is parseable, and version was bumped
+
+runs:
+  using: composite
+  steps:
+    - name: Check .bumpversion.toml exists
+      run: |
+        test -f .bumpversion.toml || (echo "ERROR: .bumpversion.toml not found" && exit 1)
+      shell: bash
+    - name: Install bump-my-version
+      run: pip install bump-my-version
+      shell: bash
+    - name: Validate config is parseable
+      run: bump-my-version show current_version --config-file .bumpversion.toml
+      shell: bash
+    - name: Validate version was bumped
+      run: bash ${{ github.action_path }}/check_bump.sh
+      shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}

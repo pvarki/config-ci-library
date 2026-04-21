@@ -1,0 +1,26 @@
+name: General Checks
+on:
+  workflow_call:
+    inputs:
+      run-bumpversion:
+        type: boolean
+        default: true
+      run-prek:
+        type: boolean
+        default: true
+jobs:
+  prek:
+    if: ${{ inputs.run-prek }}
+    runs-on: ubuntu-latest
+    name: Run Pre-Commit Checks using Prek
+    steps:
+      - uses: actions/checkout@v6
+      - uses: j178/prek-action@v2
+
+  bumpversion-check:
+    if: ${{ inputs.run-bumpversion && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    name: Validate .bumpversion.toml
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pvarki/config-ci-library/.github/actions/validate-bumpversion@main

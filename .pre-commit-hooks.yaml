@@ -1,0 +1,5 @@
+- id: validate-bumpversion-exists
+  name: Validate .bumpversion.toml exists
+  entry: pre-commit/validate-bumpversion/validate_bumpversion_exists.sh
+  language: script
+  pass_filenames: false
