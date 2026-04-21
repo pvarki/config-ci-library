@@ -1,0 +1,22 @@
+name: Code Quality + Standards
+on: [push, pull_request]
+
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    name: Run Pre-Commit Checks using Prek
+    steps:
+      - uses: actions/checkout@v6
+      - uses: j178/prek-action@v2
+  bumpversion-check:
+    runs-on: ubuntu-latest
+    name: Validate .bumpversion.toml
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check .bumpversion.toml exists
+        run: |
+          test -f .bumpversion.toml || (echo "ERROR: .bumpversion.toml not found" && exit 1)
+      - name: Install bump-my-version
+        run: pip install bump-my-version
+      - name: Validate config is parseable
+        run: bump-my-version show current_version --config-file .bumpversion.toml
