@@ -87,7 +87,7 @@ repos:
       - id: bandit
         stages: [pre-commit]
         args: ["--exclude", ".tox,.eggs,tests"]
-  - repo: local # Local to get dependencies easily
+  - repo: local # Local to get relevant dependencies
     hooks:
       - id: mypy
         name: mypy
