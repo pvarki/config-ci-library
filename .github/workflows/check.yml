@@ -15,3 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/validate-bumpversion
+
+  pre-commit-generated-check:
+    runs-on: ubuntu-latest
+    name: Check pre-commit configs are generated
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/check-precommit-generated

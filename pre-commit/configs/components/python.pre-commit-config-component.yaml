@@ -14,14 +14,14 @@
     - id: bandit
       stages: [pre-commit]
       args: ["--exclude", ".tox,.eggs,tests"]
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.19.1
+- repo: local # Local to get dependencies easily
   hooks:
     - id: mypy
+      name: mypy
+      entry: mypy
+      language: system
+      types: [python]
       stages: [pre-commit]
-      additional_dependencies:
-        - pydantic # + All other dependencies required by the project, pydantic added as an example
       args:
         - "--strict"
         - "--allow-untyped-decorators"
-      language_version: python3.12

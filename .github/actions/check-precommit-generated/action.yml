@@ -1,0 +1,14 @@
+name: Check pre-commit configs are generated
+description: Fails if generated pre-commit configs are out of date
+
+runs:
+  using: composite
+  steps:
+    - name: Check python config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/python.pre-commit-config.yaml \
+          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/python.pre-commit-config-component.yaml
+      shell: bash
