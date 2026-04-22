@@ -4,6 +4,8 @@ Contains implementations and information on CI standards. This repository is not
 
 ## Development
 
+Instructions for development in this repository.
+
 ### Pre-Commit
 
 Pre-commit is configured under `.pre-commit-config.yaml`. The recommended tool tro run it locally is [Prek](https://github.com/j178/prek), which is also used in the GitHub Action. There are no additional required dependencies apart from prek. Installing the pre-commit is done as follows:
