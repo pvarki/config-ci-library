@@ -1,0 +1,32 @@
+name: Snyk Scan
+description: "Run Snyk test and monitor for a uv-based Python project. Prerequisite: setup python with uv"
+inputs:
+  snyk-org:
+    required: true
+    description: Snyk org slug to report results to
+  snyk-token:
+    required: true
+    description: Snyk API token
+  threshold:
+    required: false
+    description: "low, medium, high or critical"
+    default: critical
+
+runs:
+  using: composite
+  steps:
+    - name: Freeze requirements for Snyk
+      run: uv pip freeze > requirements.txt
+      shell: bash
+    - uses: snyk/actions/setup@master
+    - name: Snyk test
+      run: snyk test --file=requirements.txt --command=.venv/bin/python --org=${{ inputs.snyk-org }} --severity-threshold=${{ inputs.threshold }}
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
+    - name: Snyk monitor (sync to web UI)
+      if: always()
+      run: snyk monitor --file=requirements.txt --command=.venv/bin/python --org=${{ inputs.snyk-org }} --skip-unresolved
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
