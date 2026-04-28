@@ -1,5 +1,5 @@
 name: "Publish Docker Image"
-description: "Build and push to GHCR & Docker Hub; mirror to ACR"
+description: "Build and push to GHCR, Docker Hub & ACR"
 
 inputs:
   image-name:
@@ -38,7 +38,7 @@ inputs:
 
 outputs:
   tags:
-    description: "Newline-separated list of tags pushed to GHCR"
+    description: "Newline-separated list of tags pushed to GHCR, Docker Hub and ACR"
     value: ${{ steps.meta.outputs.tags }}
 
 runs:
@@ -88,6 +88,7 @@ runs:
         images: |
           ghcr.io/${{ inputs.image-name }}
           docker.io/${{ inputs.image-name }}
+          ${{ inputs.acr-repo }}/${{ inputs.image-name }}
         tags: |
           type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }}
           type=raw,value=${{ steps.version.outputs.version }}
@@ -96,7 +97,7 @@ runs:
           type=raw,value=${{ steps.version.outputs.ref_no_slashes }}
           type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Build and push to GHCR
+    - name: Build and push
       uses: docker/build-push-action@v7
       with:
         context: ${{ inputs.context }}
@@ -107,14 +108,3 @@ runs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
-    - name: Mirror to ACR
-      shell: bash
-      run: |
-        GHCR_BASE="ghcr.io/${{ inputs.image-name }}"
-        ACR_BASE="${{ inputs.acr-repo }}/${{ inputs.image-name }}"
-        while IFS= read -r TAG; do
-          ACR_TAG="${TAG/$GHCR_BASE/$ACR_BASE}"
-          echo "Mirroring $TAG -> $ACR_TAG"
-          docker buildx imagetools create --tag "$ACR_TAG" "$TAG"
-        done <<< "${{ steps.meta.outputs.tags }}"
