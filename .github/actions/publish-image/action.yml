@@ -1,10 +1,15 @@
 name: "Publish Docker Image"
-description: "Build and push to GHCR, Docker Hub & ACR"
+description: "Build and push images to GHCR, Docker Hub & ACR"
 
 inputs:
-  image-name:
-    description: "Image name without registry (e.g. pvarki/my-service)"
+  # Naming
+  product:
+    description: "Product name (e.g. matrix, rasenmaeher). Normalized to lowercase with hyphens."
     required: true
+  component:
+    description: "Component type. One of: integration, server, client, api, ui, worker, tool."
+    required: true
+  # Context
   context:
     description: "Docker build context path"
     required: false
@@ -17,15 +22,18 @@ inputs:
     description: "Target platforms"
     required: false
     default: "linux/amd64,linux/arm64"
+  # DockerHub
   dockerhub-username:
     description: "Docker Hub username"
     required: true
   dockerhub-token:
     description: "Docker Hub token"
     required: true
+  # GitHub
   github-token:
     required: true
     description: "Token to access GitHub"
+  # ACR
   acr-repo:
     description: "ACR hostname"
     required: true
@@ -40,10 +48,48 @@ outputs:
   tags:
     description: "Newline-separated list of tags pushed to GHCR, Docker Hub and ACR"
     value: ${{ steps.meta.outputs.tags }}
+  image-name:
+    description: "Resolved image name in the form <owner>/<product>-<component>"
+    value: ${{ steps.imgname.outputs.full }}
 
 runs:
   using: composite
   steps:
+    - name: Resolve image name
+      id: imgname
+      shell: bash
+      run: |
+        RAW_PRODUCT="${{ inputs.product }}"
+        RAW_COMPONENT="${{ inputs.component }}"
+        OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+
+        # Normalize product: lowercase, underscores/spaces -> hyphens, collapse and trim hyphens
+        PRODUCT="${RAW_PRODUCT,,}"
+        PRODUCT="${PRODUCT//_/-}"
+        PRODUCT="${PRODUCT// /-}"
+        PRODUCT=$(echo "$PRODUCT" | tr -s '-')
+        PRODUCT="${PRODUCT#-}"
+        PRODUCT="${PRODUCT%-}"
+
+        if [ "$PRODUCT" != "$RAW_PRODUCT" ]; then
+          echo "::notice::Normalized product '$RAW_PRODUCT' -> '$PRODUCT'"
+        fi
+        if ! [[ "$PRODUCT" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+          echo "::error::Product '$PRODUCT' contains invalid characters after normalization."
+          exit 1
+        fi
+        COMPONENT="${RAW_COMPONENT,,}"
+        if [ "$COMPONENT" != "$RAW_COMPONENT" ]; then
+          echo "::notice::Normalized component '$RAW_COMPONENT' -> '$COMPONENT'"
+        fi
+        ALLOWED="integration server client api ui worker tool"
+        if ! echo " $ALLOWED " | grep -q " $COMPONENT "; then
+          echo "::error::Invalid component '$COMPONENT'. Must be one of: $ALLOWED"
+          exit 1
+        fi
+
+        echo "full=${OWNER}/${PRODUCT}-${COMPONENT}" >> $GITHUB_OUTPUT
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
@@ -86,9 +132,9 @@ runs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ghcr.io/${{ inputs.image-name }}
-          docker.io/${{ inputs.image-name }}
-          ${{ inputs.acr-repo }}/${{ inputs.image-name }}
+          ghcr.io/${{ steps.imgname.outputs.full }}
+          docker.io/${{ steps.imgname.outputs.full }}
+          ${{ inputs.acr-repo }}/${{ steps.imgname.outputs.full }}
         tags: |
           type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }}
           type=raw,value=${{ steps.version.outputs.version }}
