@@ -1,0 +1,33 @@
+name: Snyk Test
+description: "Run Snyk test for a uv-based Python project.
+  Prerequisite: setup python with uv"
+inputs:
+  snyk-org:
+    required: true
+    description: Snyk org slug to report results to
+  snyk-token:
+    required: true
+    description: Snyk API token
+  threshold:
+    required: false
+    description: "low, medium, high or critical"
+    default: critical
+
+runs:
+  using: composite
+  steps:
+    - name: Freeze requirements for Snyk
+      run: uv pip freeze > requirements.txt
+      shell: bash
+    - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # master as of 2026-04-29
+    - name: Snyk test
+      run: |
+        snyk test \
+          --file=requirements.txt \
+          --command=.venv/bin/python \
+          --org=${{ inputs.snyk-org }} \
+          --show-vulnerable-paths=all \
+          --severity-threshold=${{ inputs.threshold }}
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}

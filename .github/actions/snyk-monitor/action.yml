@@ -1,0 +1,31 @@
+name: Snyk Monitor
+description: "Run Snyk monitor for a uv-based Python project.
+  Sends email notifications and syncs to the web UI.
+  Should primarily only be run on pushes to main.
+  Prerequisite: setup python with uv."
+inputs:
+  snyk-org:
+    required: true
+    description: Snyk org slug to report results to
+  snyk-token:
+    required: true
+    description: Snyk API token
+
+runs:
+  using: composite
+  steps:
+    - name: Freeze requirements for Snyk
+      run: uv pip freeze > requirements.txt
+      shell: bash
+    - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # master as of 2026-04-29
+    - name: Snyk monitor (sync to web UI)
+      if: github.event_name == 'push'
+      run: |
+        snyk monitor \
+          --file=requirements.txt \
+          --command=.venv/bin/python \
+          --org=${{ inputs.snyk-org }} \
+          --target-reference=${{ github.ref_name }}
+      shell: bash
+      env:
+        SNYK_TOKEN: ${{ inputs.snyk-token }}
