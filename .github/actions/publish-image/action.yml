@@ -22,6 +22,10 @@ inputs:
     description: "Target platforms"
     required: false
     default: "linux/amd64,linux/arm64"
+  extra-tag:
+    description: "Adds additional tag with <extra-tag>"
+    required: false
+    default: ""
   # DockerHub
   dockerhub-username:
     description: "Docker Hub username"
@@ -142,6 +146,7 @@ runs:
           type=raw,value=${{ steps.version.outputs.version }}-pr${{ github.event.number }},enable=${{ github.event_name == 'pull_request' }}
           type=raw,value=${{ steps.version.outputs.ref_no_slashes }}
           type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=${{ inputs.extra_tag }},enable=${{ inputs.extra_tag != '' }}
 
     - name: Build and push
       uses: docker/build-push-action@v7
