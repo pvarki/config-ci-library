@@ -12,3 +12,24 @@ runs:
           pre-commit/configs/components/common.pre-commit-config-component.yaml \
           pre-commit/configs/components/python.pre-commit-config-component.yaml
       shell: bash
+    - name: Check typescript config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/typescript.pre-commit-config.yaml \
+          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/typescript.pre-commit-config-component.yaml \
+          -- \
+          TS_DIR=.
+      shell: bash
+    - name: Check python+typescript config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/python+typescript.pre-commit-config.yaml \
+          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/python.pre-commit-config-component.yaml \
+          pre-commit/configs/components/typescript.pre-commit-config-component.yaml \
+          -- \
+          TS_DIR=ui
+      shell: bash
