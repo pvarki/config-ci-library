@@ -1,0 +1,23 @@
+- repo: local # Local hooks so versions track the project's package.json
+  hooks:
+    - id: prettier-ts
+      name: Prettier (TypeScript / JS / CSS / HTML)
+      entry: ${TS_DIR}/node_modules/.bin/prettier --write
+      language: system
+      types_or: [ts, tsx, javascript, jsx, css, scss, html]
+      files: ^${TS_DIR}
+      stages: [pre-commit]
+    - id: eslint
+      name: ESLint
+      entry: ${TS_DIR}/node_modules/.bin/eslint --fix
+      language: system
+      types_or: [ts, tsx, javascript, jsx]
+      files: ^${TS_DIR}
+      stages: [pre-commit]
+    - id: tsc
+      name: TypeScript type check
+      entry: ${TS_DIR}/node_modules/.bin/tsc -p ${TS_DIR} --noEmit
+      language: system
+      types_or: [ts, tsx]
+      pass_filenames: false
+      stages: [pre-commit]
