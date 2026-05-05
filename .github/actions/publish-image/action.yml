@@ -30,6 +30,10 @@ inputs:
     description: "Adds additional tag with <extra-tag>"
     required: false
     default: ""
+  build-args:
+    description: "Build args passed to docker build, one KEY=value per line."
+    required: false
+    default: ""
   # DockerHub
   dockerhub-username:
     description: "Docker Hub username"
@@ -162,5 +166,6 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         target: ${{ inputs.target }}
+        build-args: ${{ inputs.build-args }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
