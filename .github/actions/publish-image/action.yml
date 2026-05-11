@@ -148,13 +148,13 @@ runs:
           docker.io/${{ steps.imgname.outputs.full }}
           ${{ inputs.acr-repo }}/${{ steps.imgname.outputs.full }}
         tags: |
-          type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }}
-          type=raw,value=${{ steps.version.outputs.version }}
+          type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }},enable={{is_default_branch}}
+          type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
           type=raw,value=${{ steps.version.outputs.version }}-pr${{ github.event.number }}-${{ steps.version.outputs.build_date }},enable=${{ github.event_name == 'pull_request' }}
           type=raw,value=${{ steps.version.outputs.version }}-pr${{ github.event.number }},enable=${{ github.event_name == 'pull_request' }}
           type=raw,value=${{ steps.version.outputs.ref_no_slashes }}
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=${{ inputs.extra_tag }},enable=${{ inputs.extra_tag != '' }}
+          type=raw,value=${{ inputs.extra-tag }},enable=${{ inputs.extra-tag != '' }}
 
     - name: Build and push
       uses: docker/build-push-action@v7
