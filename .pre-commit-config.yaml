@@ -39,6 +39,15 @@ repos:
           TS_DIR=ui
         language: script
         pass_filenames: false
+      - id: generate-golang-precommit
+        name: Generate python.pre-commit-config.yaml
+        entry: >-
+          pre-commit/configs/generate.sh generate
+          pre-commit/configs/golang.pre-commit-config.yaml
+          pre-commit/configs/components/common.pre-commit-config-component.yaml
+          pre-commit/configs/components/golang.pre-commit-config-component.yaml
+        language: script
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
