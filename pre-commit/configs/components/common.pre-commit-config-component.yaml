@@ -50,8 +50,10 @@
       stages: [pre-commit]
     - id: forbid-tabs
       stages: [pre-commit]
+      exclude: '\.go$|go\.(mod|sum)$'
     - id: remove-tabs
       stages: [pre-commit]
+      exclude: '\.go$|go\.(mod|sum)$'
 - repo: https://github.com/rhysd/actionlint
   rev: v1.7.10
   hooks:
