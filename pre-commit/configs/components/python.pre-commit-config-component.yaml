@@ -24,8 +24,9 @@
       name: mypy
       entry: mypy
       language: system
-      types: [python]
+      pass_filenames: false
       stages: [pre-commit]
       args:
         - "--strict"
         - "--allow-untyped-decorators"
+        - "src"
