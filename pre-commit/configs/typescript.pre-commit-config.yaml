@@ -30,6 +30,7 @@ repos:
         stages: [pre-commit]
       - id: check-added-large-files
         stages: [pre-commit]
+        exclude: '(poetry|uv|yarn)\.lock$|package-lock\.json$|pnpm-lock\.yaml$'
       - id: check-case-conflict
         stages: [pre-commit]
       - id: check-symlinks
