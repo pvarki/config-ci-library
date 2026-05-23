@@ -9,7 +9,9 @@ runs:
         test -f .bumpversion.toml || (echo "ERROR: .bumpversion.toml not found" && exit 1)
       shell: bash
     - name: Install bump-my-version
-      run: pip install bump-my-version
+      run: |
+        pip install bump-my-version
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
       shell: bash
     - name: Validate config is parseable
       run: bump-my-version show current_version --config-file .bumpversion.toml
