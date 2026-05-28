@@ -12,7 +12,8 @@ repos:
         entry: >-
           pre-commit/configs/generate.sh generate
           pre-commit/configs/python.pre-commit-config.yaml
-          pre-commit/configs/components/common.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/python.pre-commit-config-component.yaml
         language: script
         pass_filenames: false
@@ -21,7 +22,8 @@ repos:
         entry: >-
           pre-commit/configs/generate.sh generate
           pre-commit/configs/typescript.pre-commit-config.yaml
-          pre-commit/configs/components/common.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml
           --
           TS_DIR=.
@@ -32,7 +34,8 @@ repos:
         entry: >-
           pre-commit/configs/generate.sh generate
           pre-commit/configs/python+typescript.pre-commit-config.yaml
-          pre-commit/configs/components/common.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/python.pre-commit-config-component.yaml
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml
           --
@@ -40,12 +43,22 @@ repos:
         language: script
         pass_filenames: false
       - id: generate-golang-precommit
-        name: Generate python.pre-commit-config.yaml
+        name: Generate golang.pre-commit-config.yaml
         entry: >-
           pre-commit/configs/generate.sh generate
           pre-commit/configs/golang.pre-commit-config.yaml
-          pre-commit/configs/components/common.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/golang.pre-commit-config-component.yaml
+        language: script
+        pass_filenames: false
+      - id: generate-kubernetes-precommit
+        name: Generate kubernetes.pre-commit-config.yaml
+        entry: >-
+          pre-commit/configs/generate.sh generate
+          pre-commit/configs/kubernetes.pre-commit-config.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/kubernetes.pre-commit-config-component.yaml
         language: script
         pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks

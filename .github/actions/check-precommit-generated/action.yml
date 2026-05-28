@@ -9,7 +9,8 @@ runs:
         bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
           check \
           pre-commit/configs/python.pre-commit-config.yaml \
-          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml \
           pre-commit/configs/components/python.pre-commit-config-component.yaml
       shell: bash
     - name: Check typescript config is up to date
@@ -17,7 +18,8 @@ runs:
         bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
           check \
           pre-commit/configs/typescript.pre-commit-config.yaml \
-          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml \
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml \
           -- \
           TS_DIR=.
@@ -27,9 +29,27 @@ runs:
         bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
           check \
           pre-commit/configs/python+typescript.pre-commit-config.yaml \
-          pre-commit/configs/components/common.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml \
           pre-commit/configs/components/python.pre-commit-config-component.yaml \
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml \
           -- \
           TS_DIR=ui
+      shell: bash
+    - name: Check golang config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/golang.pre-commit-config.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml \
+          pre-commit/configs/components/golang.pre-commit-config-component.yaml
+      shell: bash
+    - name: Check kubernetes config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/kubernetes.pre-commit-config.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/kubernetes.pre-commit-config-component.yaml
       shell: bash

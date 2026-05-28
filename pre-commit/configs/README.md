@@ -3,13 +3,17 @@
 Pre-commits are assembled from components, under `/components`. Main config files can be compiled
 from multiple components:
 
-| Config                                     | common | python | typescript |
-| ------------------------------------------ | :----: | :----: | :--------: |
-| `python.pre-commit-config.yaml`            |   ✓    |   ✓    |            |
-| `typescript.pre-commit-config.yaml`        |   ✓    |        |     ✓      |
-| `python+typescript.pre-commit-config.yaml` |   ✓    |   ✓    |     ✓      |
+| Config                                     | common-base | common-format | python | typescript | golang | kubernetes |
+| ------------------------------------------ | :---------: | :-----------: | :----: | :--------: | :----: | :--------: |
+| `python.pre-commit-config.yaml`            |      ✓      |       ✓       |   ✓    |            |        |            |
+| `typescript.pre-commit-config.yaml`        |      ✓      |       ✓       |        |     ✓      |        |            |
+| `python+typescript.pre-commit-config.yaml` |      ✓      |       ✓       |   ✓    |     ✓      |        |            |
+| `golang.pre-commit-config.yaml`            |      ✓      |       ✓       |        |            |   ✓    |            |
+| `kubernetes.pre-commit-config.yaml`        |      ✓      |               |        |            |        |     ✓      |
 
 (Columns are the components under `/components`; rows are the generated configs.)
+
+`common-base` holds universal hooks; `common-format` holds prettier and can be omitted for languages that bring their own formatter (e.g. the `kubernetes` config uses yamlfmt instead).
 
 The generate.sh script is used to autogenerate the files. This runs during pre-commit, and automatically adds generated files to the commit.
 
