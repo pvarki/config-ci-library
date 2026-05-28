@@ -1,0 +1,9 @@
+- repo: https://github.com/google/yamlfmt
+  rev: v0.21.0
+  hooks:
+    - id: yamlfmt
+      name: Format YAML (k8s)
+      args:
+        - -formatter
+        - indent=2,indentless_arrays=true,retain_line_breaks=true,scan_folded_as_literal=true,include_document_start=false
+      stages: [pre-commit]

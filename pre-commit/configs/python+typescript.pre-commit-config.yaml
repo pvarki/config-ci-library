@@ -4,7 +4,8 @@
 # generate script or commit to trigger regeneration
 #
 # Generated from:
-#   - pre-commit/configs/components/common.pre-commit-config-component.yaml
+#   - pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+#   - pre-commit/configs/components/common-format.pre-commit-config-component.yaml
 #   - pre-commit/configs/components/python.pre-commit-config-component.yaml
 #   - pre-commit/configs/components/typescript.pre-commit-config-component.yaml
 repos:
@@ -41,17 +42,6 @@ repos:
     hooks:
       - id: rst-linter
         stages: [pre-commit]
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        name: Prettier
-        files: \.(yml|yaml|json|md)$
-        args:
-          - --tab-width=2
-          - --use-tabs=false
-          - --cache-location=.prettier_cache
-        stages: [pre-commit]
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
     hooks:
@@ -75,6 +65,17 @@ repos:
       - id: detect-secrets
         exclude: "poetry.lock|ui/pnpm-lock.yaml"
         args: [--baseline, .secrets.baseline]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: Prettier
+        files: \.(yml|yaml|json|md)$
+        args:
+          - --tab-width=2
+          - --use-tabs=false
+          - --cache-location=.prettier_cache
+        stages: [pre-commit]
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.11.9
     hooks:
