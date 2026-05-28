@@ -15,6 +15,8 @@ repos:
           pre-commit/configs/components/common-base.pre-commit-config-component.yaml
           pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/python.pre-commit-config-component.yaml
+          --
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
         language: script
         pass_filenames: false
       - id: generate-typescript-precommit
@@ -27,6 +29,7 @@ repos:
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml
           --
           TS_DIR=.
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
         language: script
         pass_filenames: false
       - id: generate-python-typescript-precommit
@@ -40,6 +43,7 @@ repos:
           pre-commit/configs/components/typescript.pre-commit-config-component.yaml
           --
           TS_DIR=ui
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
         language: script
         pass_filenames: false
       - id: generate-golang-precommit
@@ -50,6 +54,8 @@ repos:
           pre-commit/configs/components/common-base.pre-commit-config-component.yaml
           pre-commit/configs/components/common-format.pre-commit-config-component.yaml
           pre-commit/configs/components/golang.pre-commit-config-component.yaml
+          --
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
         language: script
         pass_filenames: false
       - id: generate-kubernetes-precommit
@@ -59,6 +65,8 @@ repos:
           pre-commit/configs/kubernetes.pre-commit-config.yaml
           pre-commit/configs/components/common-base.pre-commit-config-component.yaml
           pre-commit/configs/components/kubernetes.pre-commit-config-component.yaml
+          --
+          'DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline, --exclude-lines, "secretName:"]'
         language: script
         pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
