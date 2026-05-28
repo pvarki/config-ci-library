@@ -53,4 +53,4 @@
   hooks:
     - id: detect-secrets
       exclude: "poetry.lock|ui/pnpm-lock.yaml"
-      args: [--baseline, .secrets.baseline]
+      args: ${DETECT_SECRETS_ARGS}

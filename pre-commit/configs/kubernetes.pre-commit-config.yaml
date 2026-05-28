@@ -62,7 +62,7 @@ repos:
     hooks:
       - id: detect-secrets
         exclude: "poetry.lock|ui/pnpm-lock.yaml"
-        args: [--baseline, .secrets.baseline]
+        args: [--baseline, .secrets.baseline, --exclude-lines, "secretName:"]
   - repo: https://github.com/google/yamlfmt
     rev: v0.21.0
     hooks:
