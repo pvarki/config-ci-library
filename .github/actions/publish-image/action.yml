@@ -1,5 +1,5 @@
 name: "Publish Docker Image"
-description: "Build and push images to GHCR, Docker Hub & ACR"
+description: "Build and push images to the enabled registries (GHCR, Docker Hub & ACR)"
 
 inputs:
   # Naming
@@ -36,29 +36,35 @@ inputs:
     default: ""
   # DockerHub
   dockerhub-username:
-    description: "Docker Hub username"
-    required: true
+    description: "Docker Hub username. Omit all Docker Hub inputs to skip Docker Hub publishing."
+    required: false
+    default: "__UNSET__"
   dockerhub-token:
     description: "Docker Hub token"
-    required: true
+    required: false
+    default: "__UNSET__"
   # GitHub
   github-token:
-    required: true
-    description: "Token to access GitHub"
+    description: "Token to access GitHub. Omit to skip GHCR publishing."
+    required: false
+    default: "__UNSET__"
   # ACR
   acr-repo:
-    description: "ACR hostname"
-    required: true
+    description: "ACR hostname. Omit all ACR inputs to skip ACR publishing."
+    required: false
+    default: "__UNSET__"
   acr-username:
     description: "ACR username"
-    required: true
+    required: false
+    default: "__UNSET__"
   acr-token:
     description: "ACR token"
-    required: true
+    required: false
+    default: "__UNSET__"
 
 outputs:
   tags:
-    description: "Newline-separated list of tags pushed to GHCR, Docker Hub and ACR"
+    description: "Newline-separated list of tags pushed to the enabled registries"
     value: ${{ steps.meta.outputs.tags }}
   image-name:
     description: "Resolved image name in the form <owner>/<product>-<component>"
@@ -102,13 +108,92 @@ runs:
 
         echo "full=${OWNER}/${PRODUCT}-${COMPONENT}" >> $GITHUB_OUTPUT
 
+    - name: Resolve target registries
+      id: registries
+      shell: bash
+      env:
+        DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
+        DOCKERHUB_TOKEN: ${{ inputs.dockerhub-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        ACR_REPO: ${{ inputs.acr-repo }}
+        ACR_USERNAME: ${{ inputs.acr-username }}
+        ACR_TOKEN: ${{ inputs.acr-token }}
+      run: |
+        # Defaults only apply when the caller omits an input entirely, so each
+        # input is in one of three states:
+        #   unset - never passed (default "__UNSET__" applied)
+        #   empty - passed but resolved to "" (e.g. referenced secret missing)
+        #   set   - real value
+        UNSET="__UNSET__"
+
+        state() {
+          if [ "$1" = "$UNSET" ]; then
+            echo unset
+          elif [ -z "$1" ]; then
+            echo empty
+          else
+            echo set
+          fi
+        }
+
+        # Per registry: all unset -> skip, all set -> publish,
+        # any empty or a set/unset mix -> fail
+
+        DH_USERNAME=$(state "$DOCKERHUB_USERNAME")
+        DH_TOKEN=$(state "$DOCKERHUB_TOKEN")
+        DOCKERHUB=false
+        if [ "$DH_USERNAME" = "empty" ] || [ "$DH_TOKEN" = "empty" ]; then
+          echo "::error::Docker Hub: dockerhub-username or dockerhub-token was passed but is empty. Check that the referenced secrets exist."
+          exit 1
+        elif [ "$DH_USERNAME" = "set" ] && [ "$DH_TOKEN" = "set" ]; then
+          DOCKERHUB=true
+        elif [ "$DH_USERNAME" = "set" ] || [ "$DH_TOKEN" = "set" ]; then
+          echo "::error::Docker Hub: both dockerhub-username and dockerhub-token must be provided."
+          exit 1
+        fi
+
+        GH_TOKEN=$(state "$GITHUB_TOKEN")
+        GHCR=false
+        if [ "$GH_TOKEN" = "empty" ]; then
+          echo "::error::GHCR: github-token was passed but is empty. Check that the referenced secret exists."
+          exit 1
+        elif [ "$GH_TOKEN" = "set" ]; then
+          GHCR=true
+        fi
+
+        ACR_R=$(state "$ACR_REPO")
+        ACR_U=$(state "$ACR_USERNAME")
+        ACR_T=$(state "$ACR_TOKEN")
+        ACR=false
+        if [ "$ACR_R" = "empty" ] || [ "$ACR_U" = "empty" ] || [ "$ACR_T" = "empty" ]; then
+          echo "::error::ACR: acr-repo, acr-username or acr-token was passed but is empty. Check that the referenced secrets exist."
+          exit 1
+        elif [ "$ACR_R" = "set" ] && [ "$ACR_U" = "set" ] && [ "$ACR_T" = "set" ]; then
+          ACR=true
+        elif [ "$ACR_R" = "set" ] || [ "$ACR_U" = "set" ] || [ "$ACR_T" = "set" ]; then
+          echo "::error::ACR: acr-repo, acr-username and acr-token must all be provided."
+          exit 1
+        fi
+
+        # Publishing to zero registries fails action
+        if [ "$DOCKERHUB" = false ] && [ "$GHCR" = false ] && [ "$ACR" = false ]; then
+          echo "::error::No registry credentials provided. Set inputs for at least one of: Docker Hub, GHCR, ACR."
+          exit 1
+        fi
+
+        echo "dockerhub=${DOCKERHUB}" >> $GITHUB_OUTPUT
+        echo "ghcr=${GHCR}" >> $GITHUB_OUTPUT
+        echo "acr=${ACR}" >> $GITHUB_OUTPUT
+
     - name: Log in to Docker Hub
+      if: steps.registries.outputs.dockerhub == 'true'
       uses: docker/login-action@v3
       with:
         username: ${{ inputs.dockerhub-username }}
         password: ${{ inputs.dockerhub-token }}
 
     - name: Log in to GHCR
+      if: steps.registries.outputs.ghcr == 'true'
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -116,6 +201,7 @@ runs:
         password: ${{ inputs.github-token }}
 
     - name: Log in to ACR
+      if: steps.registries.outputs.acr == 'true'
       uses: docker/login-action@v4
       with:
         registry: ${{ inputs.acr-repo }}
@@ -144,9 +230,9 @@ runs:
       uses: docker/metadata-action@v5
       with:
         images: |
-          ghcr.io/${{ steps.imgname.outputs.full }}
-          docker.io/${{ steps.imgname.outputs.full }}
-          ${{ inputs.acr-repo }}/${{ steps.imgname.outputs.full }}
+          name=ghcr.io/${{ steps.imgname.outputs.full }},enable=${{ steps.registries.outputs.ghcr }}
+          name=docker.io/${{ steps.imgname.outputs.full }},enable=${{ steps.registries.outputs.dockerhub }}
+          name=${{ inputs.acr-repo }}/${{ steps.imgname.outputs.full }},enable=${{ steps.registries.outputs.acr }}
         tags: |
           type=raw,value=${{ steps.version.outputs.version }}-${{ steps.version.outputs.build_date }},enable={{is_default_branch}}
           type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
