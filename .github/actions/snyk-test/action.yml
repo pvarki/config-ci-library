@@ -16,10 +16,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Export requirements for Snyk
+    - name: Freeze installed packages for Snyk
       run: |
         uv pip install pip
-        uv export --no-hashes --no-emit-project --format requirements-txt > requirements.txt
+        uv pip freeze --exclude-editable > requirements.txt
       shell: bash
     - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # master as of 2026-04-29
     - name: Snyk test
