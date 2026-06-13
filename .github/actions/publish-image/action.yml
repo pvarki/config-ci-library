@@ -10,6 +10,10 @@ inputs:
     description: "Component type. One of: integration, server, client, api, ui, worker, tool."
     required: true
   # Context
+  version_context:
+    description: "Directory of .bumpversion.toml to use for version info"
+    required: false
+    default: "./"
   context:
     description: "Docker build context path"
     required: false
@@ -218,6 +222,7 @@ runs:
       id: version
       shell: bash
       run: |
+        cd ${{ inputs.product }}
         VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
         BUILD_DATE=$(date -u +%Y%m%dT%H%M)
         REF_NO_SLASHES=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
