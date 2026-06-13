@@ -21,6 +21,7 @@ jobs:
     name: Validate ./validate-bumpversion-tgtpractise/.bumpversion.toml
     steps:
       - uses: actions/checkout@v6
+      - run: rm ./.bumpversion.toml
       - uses: ./.github/actions/validate-bumpversion
         with:
           version_context: "./validate-bumpversion-tgtpractise"
