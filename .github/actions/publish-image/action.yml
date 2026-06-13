@@ -222,7 +222,7 @@ runs:
       id: version
       shell: bash
       run: |
-        cd ${{ inputs.product }}
+        cd ${{ inputs.version_context }}
         VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
         BUILD_DATE=$(date -u +%Y%m%dT%H%M)
         REF_NO_SLASHES=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
