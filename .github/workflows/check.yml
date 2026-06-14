@@ -24,7 +24,7 @@ jobs:
       - run: rm ./.bumpversion.toml
       - uses: ./.github/actions/validate-bumpversion
         with:
-          version_context: "./validate-bumpversion-tgtpractise"
+          version_context: "./validate-bumpversion-tgtpractise/"
 
   pre-commit-generated-check:
     runs-on: ubuntu-latest
