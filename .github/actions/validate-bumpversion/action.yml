@@ -13,7 +13,8 @@ runs:
   steps:
     - name: Check .bumpversion.toml exists
       run: |
-        test -f .bumpversion.toml || (echo "ERROR: .bumpversion.toml not found" && exit 1)
+        cd ${{ inputs.version_context }}
+        test -f .bumpversion.toml || (echo "ERROR: ${{ inputs.version_context }}: .bumpversion.toml not found" && exit 1)
       shell: bash
     - name: Install bump-my-version
       run: |
