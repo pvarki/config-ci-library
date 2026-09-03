@@ -33,6 +33,27 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/check-precommit-generated
 
+  release-notes-check:
+    runs-on: ubuntu-latest
+    name: Build release notes for this repo
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/release-notes
+        id: notes
+        with:
+          tag: HEAD
+          previous-tag: HEAD~5
+          slides: pdf
+      - name: Check the changelog was written
+        run: |
+          test -s "${{ steps.notes.outputs.out }}/changelog.md"
+          cat "${{ steps.notes.outputs.out }}/changelog.md"
+
   publish:
     name: Build and publish selftest image
     needs: [bumpversion-check-root, pre-commit-generated-check]

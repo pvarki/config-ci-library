@@ -1,0 +1,64 @@
+name: Release notes
+description: Build the changelog, release notes and slides for a tag range with releasenote-tool
+
+inputs:
+  # Range
+  tag:
+    description: "Tag to release. Titles the release and ends the commit range. Defaults to the pushed tag."
+    required: false
+    default: ""
+  previous-tag:
+    description: "Tag the range starts after, exclusive. Defaults to the tag before `tag`."
+    required: false
+    default: ""
+  # Output
+  out:
+    description: "Directory to write into, relative to the workspace"
+    required: false
+    default: "release-notes"
+  slides:
+    description: "Slide formats to render, comma separated. Empty renders no slides."
+    required: false
+    default: "pdf,pptx"
+  image:
+    description: "releasenote-tool image to run"
+    required: false
+    default: "ghcr.io/pvarki/releasenote-tool:0.1.0"
+  # Release
+  attach-to-release:
+    description: "Attach the output to the release of `tag`, creating it from release-body.md when there is none"
+    required: false
+    default: "false"
+  github-token:
+    description: "Token used to read pull requests and manage the release"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  out:
+    description: "Directory the output was written to"
+    value: ${{ steps.run.outputs.out }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build changelog and release notes
+      id: run
+      run: bash ${{ github.action_path }}/run.sh
+      shell: bash
+      env:
+        TAG: ${{ inputs.tag }}
+        PREVIOUS_TAG: ${{ inputs.previous-tag }}
+        OUT: ${{ inputs.out }}
+        SLIDES: ${{ inputs.slides }}
+        IMAGE: ${{ inputs.image }}
+        GH_TOKEN: ${{ inputs.github-token }}
+
+    - name: Attach to release
+      if: inputs.attach-to-release == 'true'
+      run: bash ${{ github.action_path }}/release.sh
+      shell: bash
+      env:
+        TAG: ${{ steps.run.outputs.tag }}
+        OUT: ${{ inputs.out }}
+        GH_TOKEN: ${{ inputs.github-token }}
