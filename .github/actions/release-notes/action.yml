@@ -1,0 +1,95 @@
+name: Release notes
+description: Build the changelog, release notes and slides for a commit range with releasenote-tool
+
+inputs:
+  # Range
+  ref:
+    description: "End of the range, inclusive. Titles the release. Defaults to the pushed tag, or HEAD when pr is set."
+    required: false
+    default: ""
+  previous-ref:
+    description: "Start of the range, exclusive. Defaults to the tag before `ref`."
+    required: false
+    default: ""
+  pr:
+    description: "Also read this pull request, merged or not, to preview the notes it would add."
+    required: false
+    default: ""
+  # Naming
+  product:
+    description: "Name the output files lead with. Defaults to this repository's name."
+    required: false
+    default: ""
+  release:
+    description: "Version the documents claim. Defaults to `ref`."
+    required: false
+    default: ""
+  # Output
+  out:
+    description: "Directory to write into, relative to the workspace"
+    required: false
+    default: "release-notes"
+  slides:
+    description: "Slide formats to render, comma separated. Empty renders no slides."
+    required: false
+    default: "pdf,pptx"
+  image:
+    description: "releasenote-tool image to run"
+    required: false
+    # TODO: repin to :1.0.0 once pvarki/python-releasenote-tool#1 is merged
+    default: "ghcr.io/pvarki/releasenote-tool:1.0.0-pr1-20260907T1100"
+  # Release
+  attach-to-release:
+    description: "Attach the output to the release of `ref`, creating it from release-body.md when there is none"
+    required: false
+    default: "false"
+  github-token:
+    description: "Token used to pull the image, read pull requests and manage the release"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  out:
+    description: "Directory the output was written to"
+    value: ${{ steps.run.outputs.out }}
+  ref:
+    description: "The resolved end of the range"
+    value: ${{ steps.run.outputs.ref }}
+  body:
+    description: "Path to release-body.md, the notes and changelog in one file"
+    value: ${{ steps.run.outputs.body }}
+
+runs:
+  using: composite
+  steps:
+    - name: Log in to GHCR
+      if: startsWith(inputs.image, 'ghcr.io/')
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Build changelog and release notes
+      id: run
+      run: bash ${{ github.action_path }}/run.sh
+      shell: bash
+      env:
+        REF: ${{ inputs.ref }}
+        PREVIOUS_REF: ${{ inputs.previous-ref }}
+        PR: ${{ inputs.pr }}
+        PRODUCT: ${{ inputs.product }}
+        RELEASE: ${{ inputs.release }}
+        OUT: ${{ inputs.out }}
+        SLIDES: ${{ inputs.slides }}
+        IMAGE: ${{ inputs.image }}
+        GH_TOKEN: ${{ inputs.github-token }}
+
+    - name: Attach to release
+      if: inputs.attach-to-release == 'true'
+      run: bash ${{ github.action_path }}/release.sh
+      shell: bash
+      env:
+        REF: ${{ steps.run.outputs.ref }}
+        OUT: ${{ inputs.out }}
+        GH_TOKEN: ${{ inputs.github-token }}
