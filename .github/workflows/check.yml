@@ -54,6 +54,22 @@ jobs:
           test -s "${{ steps.notes.outputs.out }}/changelog.md"
           cat "${{ steps.notes.outputs.out }}/changelog.md"
 
+  tag-release-check:
+    runs-on: ubuntu-latest
+    name: Resolve the release tag for this repo
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/tag-release
+        id: tag
+        with:
+          dry-run: "true"
+      - name: Check the tag matches the current version
+        run: |
+          VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
+          test "${{ steps.tag.outputs.tag }}" = "v${VERSION//+/-}"
+
   publish:
     name: Build and publish selftest image
     needs: [bumpversion-check-root, pre-commit-generated-check]
