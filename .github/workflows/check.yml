@@ -68,8 +68,6 @@ jobs:
           test -s "$BODY"
           test -s "${STEM}-changelog.md"
           cat "${STEM}-changelog.md"
-          # The notes, the deck and its renders only exist when a pull request in
-          # the range filled in the releasenote block, so they go together or not at all.
           if [ -s "${STEM}-slides.md" ]; then
             test -s "${STEM}-release-notes.md"
             test -s "${STEM}-release-notes.pdf"
@@ -82,6 +80,26 @@ jobs:
           name: release-notes-preview
           path: ${{ steps.notes.outputs.out }}
           retention-days: 7
+
+  tag-release-check:
+    runs-on: ubuntu-latest
+    name: Resolve the release tag for this repo
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/tag-release
+        id: tag
+        with:
+          dry-run: "true"
+      - name: Check the tag matches the current version
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          REPORTED: ${{ steps.tag.outputs.version }}
+        run: |
+          VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
+          test "$REPORTED" = "$VERSION"
+          test "$TAG" = "v$VERSION"
 
   publish:
     name: Build and publish selftest image
