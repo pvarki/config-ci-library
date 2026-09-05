@@ -51,6 +51,17 @@ runs:
           -- \
           "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
       shell: bash
+    - name: Check terraform config is up to date
+      run: |
+        bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \
+          check \
+          pre-commit/configs/terraform.pre-commit-config.yaml \
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml \
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml \
+          pre-commit/configs/components/terraform.pre-commit-config-component.yaml \
+          -- \
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
+      shell: bash
     - name: Check kubernetes config is up to date
       run: |
         bash ${{ github.action_path }}/../../../pre-commit/configs/generate.sh \

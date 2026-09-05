@@ -58,6 +58,18 @@ repos:
           "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
         language: script
         pass_filenames: false
+      - id: generate-terraform-precommit
+        name: Generate terraform.pre-commit-config.yaml
+        entry: >-
+          pre-commit/configs/generate.sh generate
+          pre-commit/configs/terraform.pre-commit-config.yaml
+          pre-commit/configs/components/common-base.pre-commit-config-component.yaml
+          pre-commit/configs/components/common-format.pre-commit-config-component.yaml
+          pre-commit/configs/components/terraform.pre-commit-config-component.yaml
+          --
+          "DETECT_SECRETS_ARGS=[--baseline, .secrets.baseline]"
+        language: script
+        pass_filenames: false
       - id: generate-kubernetes-precommit
         name: Generate kubernetes.pre-commit-config.yaml
         entry: >-
