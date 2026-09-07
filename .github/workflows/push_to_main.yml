@@ -1,0 +1,27 @@
+name: Tag and release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Tag the current version and release it
+    permissions:
+      contents: write
+      packages: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/tag-release
+        id: tag
+      - uses: ./.github/actions/release-notes
+        if: steps.tag.outputs.tag != ''
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+          release: ${{ steps.tag.outputs.version }}
+          product: config-ci-library
+          attach-to-release: "true"
