@@ -36,8 +36,7 @@ inputs:
   image:
     description: "releasenote-tool image to run"
     required: false
-    # TODO: repin to :1.0.0 once pvarki/python-releasenote-tool#1 is merged
-    default: "ghcr.io/pvarki/releasenote-tool:1.0.0-pr1-20260907T1100"
+    default: "ghcr.io/pvarki/releasenote-tool:1.0.0"
   # Release
   attach-to-release:
     description: "Attach the output to the release of `ref`, creating it from release-body.md when there is none"
