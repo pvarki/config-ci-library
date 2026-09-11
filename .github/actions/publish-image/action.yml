@@ -7,7 +7,7 @@ inputs:
     description: "Product name (e.g. matrix, rasenmaeher). Normalized to lowercase with hyphens."
     required: true
   component:
-    description: "Component type. One of: integration, server, client, api, ui, worker, tool."
+    description: "Component type. One of: integration, server, client, api, ui, worker, tool, plugin."
     required: true
   # Context
   version_context:
@@ -104,7 +104,7 @@ runs:
         if [ "$COMPONENT" != "$RAW_COMPONENT" ]; then
           echo "::notice::Normalized component '$RAW_COMPONENT' -> '$COMPONENT'"
         fi
-        ALLOWED="integration server client api ui worker tool"
+        ALLOWED="integration server client api ui worker tool plugin"
         if ! echo " $ALLOWED " | grep -q " $COMPONENT "; then
           echo "::error::Invalid component '$COMPONENT'. Must be one of: $ALLOWED"
           exit 1
