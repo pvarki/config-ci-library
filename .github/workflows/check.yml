@@ -33,6 +33,74 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/check-precommit-generated
 
+  release-notes-check:
+    runs-on: ubuntu-latest
+    name: Build release notes for this repo
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Read the version to name the output after
+        id: version
+        run: |
+          VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
+          echo "version=$VERSION" >>"$GITHUB_OUTPUT"
+      - uses: ./.github/actions/release-notes
+        id: notes
+        with:
+          ref: HEAD
+          previous-ref: HEAD~5
+          pr: ${{ github.event.number }}
+          product: config-ci-library
+          release: ${{ steps.version.outputs.version }}
+          slides: pdf,pptx
+      - name: Check the changelog and the release body were written
+        env:
+          OUT: ${{ steps.notes.outputs.out }}
+          BODY: ${{ steps.notes.outputs.body }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          STEM="$OUT/config-ci-library-${VERSION//+/-}"
+          test -s "$BODY"
+          test -s "${STEM}-changelog.md"
+          cat "${STEM}-changelog.md"
+          if [ -s "${STEM}-slides.md" ]; then
+            test -s "${STEM}-release-notes.md"
+            test -s "${STEM}-release-notes.pdf"
+            test -s "${STEM}-release-notes.pptx"
+          else
+            echo "No user-facing changes in the range, changelog only"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-preview
+          path: ${{ steps.notes.outputs.out }}
+          retention-days: 7
+
+  tag-release-check:
+    runs-on: ubuntu-latest
+    name: Resolve the release tag for this repo
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/tag-release
+        id: tag
+        with:
+          dry-run: "true"
+      - name: Check the tag matches the current version
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          REPORTED: ${{ steps.tag.outputs.version }}
+        run: |
+          VERSION=$(python3 -c "import tomllib; d=tomllib.load(open('.bumpversion.toml','rb')); print(d['tool']['bumpversion']['current_version'])")
+          test "$REPORTED" = "$VERSION"
+          test "$TAG" = "v$VERSION"
+
   publish:
     name: Build and publish selftest image
     needs: [bumpversion-check-root, pre-commit-generated-check]
