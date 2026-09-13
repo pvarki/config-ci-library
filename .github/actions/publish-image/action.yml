@@ -189,6 +189,10 @@ runs:
         echo "ghcr=${GHCR}" >> $GITHUB_OUTPUT
         echo "acr=${ACR}" >> $GITHUB_OUTPUT
 
+    - name: Validate build runner
+      shell: bash
+      run: ${{ github.action_path }}/validate-runner.sh
+
     - name: Log in to Docker Hub
       if: steps.registries.outputs.dockerhub == 'true'
       uses: docker/login-action@v3

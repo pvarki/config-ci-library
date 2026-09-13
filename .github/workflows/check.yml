@@ -53,3 +53,45 @@ jobs:
           acr-repo: ${{ vars.ACR_REPO }}
           acr-username: ${{ vars.ACR_USERNAME }}
           acr-token: ${{ secrets.ACR_TOKEN }}
+
+  publish-image-wrong-runner:
+    name: publish-image rejects GitHub-hosted runner
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run runner validation
+        id: validation
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+
+          output="$(
+            .github/actions/publish-image/validate-runner.sh 2>&1
+          )"
+          rc=$?
+
+          echo "$output"
+
+          {
+            echo "exit_code=$rc"
+            echo "output<<EOF"
+            echo "$output"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          exit "$rc"
+
+      - name: Assert expected failure
+        shell: bash
+        env:
+          EXIT_CODE: ${{ steps.validation.outputs.exit_code }}
+          OUTPUT: ${{ steps.validation.outputs.output }}
+        run: |
+          test "$EXIT_CODE" -ne 0
+
+          grep -F \
+            "publish-image requires 'runs-on: arc-runner-set'" \
+            <<<"$OUTPUT"
