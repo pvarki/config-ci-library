@@ -36,7 +36,7 @@ jobs:
   publish:
     name: Build and publish selftest image
     needs: [bumpversion-check-root, pre-commit-generated-check]
-    runs-on: ubuntu-latest
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
