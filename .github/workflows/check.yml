@@ -53,7 +53,7 @@ jobs:
         id: notes
         with:
           ref: HEAD
-          previous-ref: HEAD~5
+          previous-ref: ${{ github.event.pull_request.base.sha }}
           pr: ${{ github.event.number }}
           product: config-ci-library
           release: ${{ steps.version.outputs.version }}
