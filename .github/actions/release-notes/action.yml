@@ -36,7 +36,7 @@ inputs:
   image:
     description: "releasenote-tool image to run"
     required: false
-    default: "ghcr.io/pvarki/releasenote-tool:1.0.0"
+    default: "ghcr.io/pvarki/releasenote-tool:1.0.1"
   # Release
   attach-to-release:
     description: "Attach the output to the release of `ref`, creating it from release-body.md when there is none"
