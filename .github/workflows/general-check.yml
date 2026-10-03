@@ -15,7 +15,7 @@ jobs:
     name: Run Pre-Commit Checks using Prek
     steps:
       - uses: actions/checkout@v7
-      - uses: j178/prek-action@v3
+      - uses: j178/prek-action@v3.0.0
 
   bumpversion-check:
     if: ${{ inputs.run-bumpversion && github.event_name == 'pull_request' }}
