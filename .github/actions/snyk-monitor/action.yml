@@ -19,7 +19,7 @@ runs:
         uv pip install pip
         uv pip freeze --exclude-editable > requirements.txt
       shell: bash
-    - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # master as of 2026-04-29
+    - uses: snyk/actions/setup@b075801f26076be9bb50521154cafab73f44da0c # master as of 2026-10-03
     - name: Snyk monitor (sync to web UI)
       if: github.event_name == 'push'
       run: |

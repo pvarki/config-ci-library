@@ -195,14 +195,14 @@ runs:
 
     - name: Log in to Docker Hub
       if: steps.registries.outputs.dockerhub == 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ inputs.dockerhub-username }}
         password: ${{ inputs.dockerhub-token }}
 
     - name: Log in to GHCR
       if: steps.registries.outputs.ghcr == 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -252,7 +252,7 @@ runs:
 
     - name: Generate image metadata
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: |
           name=ghcr.io/${{ steps.imgname.outputs.full }},enable=${{ steps.registries.outputs.ghcr }}
