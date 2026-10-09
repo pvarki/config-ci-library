@@ -1,0 +1,33 @@
+name: Check Workflow Parity
+description: Ensures two GitHub Actions workflow files have matching job configurations to prevent CI drift
+
+inputs:
+  workflow_a:
+    description: "Path to the first workflow file"
+    required: false
+    default: ".github/workflows/pull_request.yml"
+  workflow_b:
+    description: "Path to the second workflow file"
+    required: false
+    default: ".github/workflows/push_to_main.yml"
+  job_name:
+    description: "Name of the job to compare in both workflows"
+    required: false
+    default: "build_and_publish"
+  allowed_diffs:
+    description: "Comma-separated list of publish-image 'with' keys that may differ (e.g. extra-tag)"
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Check workflow parity
+      run: |
+        pip install --quiet pyyaml
+        python3 ${{ github.action_path }}/check_parity.py \
+          --workflow-a "${{ inputs.workflow_a }}" \
+          --workflow-b "${{ inputs.workflow_b }}" \
+          --job "${{ inputs.job_name }}" \
+          --allowed-diffs "${{ inputs.allowed_diffs }}"
+      shell: bash
