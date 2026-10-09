@@ -6,21 +6,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Pre-Commit Checks using Prek
     steps:
-      - uses: actions/checkout@v6
-      - uses: j178/prek-action@v2
+      - uses: actions/checkout@v7
+      - uses: j178/prek-action@v3.0.0
 
   bumpversion-check-root:
     runs-on: ubuntu-latest
     name: Validate .bumpversion.toml
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/validate-bumpversion
 
   bumpversion-check-subdir:
     runs-on: ubuntu-latest
     name: Validate ./validate-bumpversion-tgtpractise/.bumpversion.toml
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: rm ./.bumpversion.toml
       - uses: ./.github/actions/validate-bumpversion
         with:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check pre-commit configs are generated
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/check-precommit-generated
 
   release-notes-check:
@@ -41,7 +41,7 @@ jobs:
       packages: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Read the version to name the output after
@@ -75,7 +75,7 @@ jobs:
           else
             echo "No user-facing changes in the range, changelog only"
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-notes-preview
           path: ${{ steps.notes.outputs.out }}
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Resolve the release tag for this repo
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: ./.github/actions/tag-release
@@ -109,7 +109,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Publish Docker image
         uses: ./.github/actions/publish-image
         with:
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run runner validation
         id: validation
