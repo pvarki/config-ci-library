@@ -8,7 +8,7 @@ Instructions for development in this repository.
 
 ### Pre-Commit
 
-Pre-commit is configured under `.pre-commit-config.yaml`. The recommended tool to run it locally is [Prek](https://github.com/j178/prek), which is also used in the GitHub Action. There are no additional required dependencies apart from prek. Installing the pre-commit is done via `prek install`.
+Pre-commit is configured under `.pre-commit-config.yaml`. The recommended tool to run it locally is [Prek](https://github.com/j178/prek), which is also used in the GitHub Action. There are no additional required dependencies apart from prek. Installing the pre-commit is done via `prek install`, which installs both the `pre-commit` and `commit-msg` hooks.
 
 And checks can be manually run with `prek run --all-files`
 
@@ -95,6 +95,9 @@ Copy the relevant generated config from `pre-commit/configs/` into your repo as 
 - `golang.pre-commit-config.yaml`
 - `kubernetes.pre-commit-config.yaml`
 - `terraform.pre-commit-config.yaml`
+
+Every variant sets `default_install_hook_types: [pre-commit, commit-msg]`, so `prek install` installs
+both hook types.
 
 The terraform config needs nothing on `PATH` — `terraform`, `tflint` and `trivy` are pinned in the
 config and downloaded into a cache by the hooks themselves; see `pre-commit/configs/README.md` for
