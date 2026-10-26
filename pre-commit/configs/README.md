@@ -16,6 +16,8 @@ from multiple components:
 
 `common-base` holds universal hooks; `common-format` holds prettier and can be omitted for languages that bring their own formatter (e.g. the `kubernetes` config uses yamlfmt instead).
 
+Every config sets `default_install_hook_types: [pre-commit, commit-msg]`, so `prek install` installs both hook types and the `commit-msg` hook from `common-base` actually runs.
+
 ## Required tooling
 
 Most hooks bring their own dependencies, but some expect binaries on `PATH`:
