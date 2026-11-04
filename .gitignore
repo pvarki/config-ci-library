@@ -2,3 +2,4 @@
 .prettier_cache
 .idea
 *cache*
+.build

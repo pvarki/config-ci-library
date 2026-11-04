@@ -1,0 +1,12 @@
+# Builds the fixture package the zarf-package action is tested against.
+version: "3"
+
+vars:
+  ARCH: '{{.ARCH | default "amd64"}}'
+  BUILD_DIR: '{{.BUILD_DIR | default ".build"}}'
+
+tasks:
+  package:
+    desc: Build the self-test Zarf package archive
+    cmds:
+      - zarf package create . --architecture {{.ARCH | shellQuote}} --confirm --output {{.BUILD_DIR | shellQuote}}
