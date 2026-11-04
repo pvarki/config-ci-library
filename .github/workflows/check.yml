@@ -101,6 +101,32 @@ jobs:
           test "$REPORTED" = "$VERSION"
           test "$TAG" = "v$VERSION"
 
+  zarf-package-check:
+    runs-on: ubuntu-latest
+    name: Build the selftest Zarf package
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          cache: true
+      - uses: ./.github/actions/zarf-package
+        id: package
+        with:
+          lint-command: zarf dev lint zarf-selftest
+          build-command: task -d zarf-selftest package ARCH="$ARCH" BUILD_DIR="$BUILD_DIR"
+          publish: false
+      - name: Check the archive, the outputs and that nothing was published
+        env:
+          PACKAGE: ${{ steps.package.outputs.package }}
+          VERSION: ${{ steps.package.outputs.version }}
+          TAG: ${{ steps.package.outputs.tag }}
+          REFS: ${{ steps.package.outputs.refs }}
+        run: |
+          test -s "$PACKAGE"
+          test "$VERSION" = "$(bump-my-version show current_version)"
+          test "$TAG" = "${VERSION//+/-}"
+          test -z "$REFS"
+
   publish:
     name: Build and publish selftest image
     needs: [bumpversion-check-root, pre-commit-generated-check]

@@ -1,0 +1,12 @@
+kind: ZarfPackageConfig
+metadata:
+  name: ci-selftest
+  version: 0.1.0
+  description: Fixture package the zarf-package action is self-tested against
+components:
+  - name: configmap
+    required: true
+    manifests:
+      - name: configmap
+        files:
+          - configmap.yaml
