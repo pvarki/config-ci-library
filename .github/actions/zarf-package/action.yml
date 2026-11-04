@@ -1,0 +1,101 @@
+name: Zarf package
+description: Build, lint, sign and publish a Zarf package to an OCI registry
+
+inputs:
+  build-command:
+    description: "Command that builds the package into $BUILD_DIR. ARCH and BUILD_DIR are exported to it."
+    required: false
+    default: 'task build:package ARCH="$ARCH" BUILD_DIR="$BUILD_DIR"'
+  arch:
+    description: "Package architecture"
+    required: false
+    default: "amd64"
+  version:
+    description: "Package version. Defaults to `bump-my-version show current_version`."
+    required: false
+    default: ""
+  version_context:
+    description: "Directory to read the version from with bump-my-version"
+    required: false
+    default: "./"
+  extra-tags:
+    description: "Tags to publish besides the version, comma or newline separated"
+    required: false
+    default: "latest"
+  oci-repository:
+    description: "OCI namespace to publish into, e.g. oci://ghcr.io/pvarki"
+    required: false
+    default: ""
+  publish:
+    description: "Publish the package. Set to false for a build only run."
+    required: false
+    default: "true"
+  lint-command:
+    description: "Command that lints the package definition. Empty skips linting."
+    required: false
+    default: "zarf dev lint ."
+  sign:
+    description: "Signing mode: none or zarf-keyless. Keyless signing needs `id-token: write`."
+    required: false
+    default: "none"
+  github-token:
+    description: "Token used to log in to GHCR"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  package:
+    description: "Path to the built package archive"
+    value: ${{ steps.build.outputs.package }}
+  version:
+    description: "Resolved package version"
+    value: ${{ steps.build.outputs.version }}
+  tag:
+    description: "OCI tag derived from the version"
+    value: ${{ steps.build.outputs.tag }}
+  refs:
+    description: "Newline-separated list of published OCI references"
+    value: ${{ steps.publish.outputs.refs }}
+
+runs:
+  using: composite
+  steps:
+    - name: Lint and build the package
+      id: build
+      run: bash ${{ github.action_path }}/build.sh
+      shell: bash
+      env:
+        LINT_COMMAND: ${{ inputs.lint-command }}
+        BUILD_COMMAND: ${{ inputs.build-command }}
+        ARCH: ${{ inputs.arch }}
+        VERSION: ${{ inputs.version }}
+        VERSION_CONTEXT: ${{ inputs.version_context }}
+        SIGN: ${{ inputs.sign }}
+
+    - name: Log in to GHCR
+      if: inputs.publish == 'true' && startsWith(inputs.oci-repository, 'oci://ghcr.io/')
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    # Keyless signature from the Actions OIDC token, stored in the archive.
+    - name: Sign the package
+      if: inputs.publish == 'true' && inputs.sign == 'zarf-keyless'
+      run: zarf package sign "$PACKAGE" --keyless --confirm
+      shell: bash
+      env:
+        PACKAGE: ${{ steps.build.outputs.package }}
+
+    - name: Publish the package
+      id: publish
+      if: inputs.publish == 'true'
+      run: bash ${{ github.action_path }}/publish.sh
+      shell: bash
+      env:
+        PACKAGE: ${{ steps.build.outputs.package }}
+        TAG: ${{ steps.build.outputs.tag }}
+        EXTRA_TAGS: ${{ inputs.extra-tags }}
+        OCI_REPOSITORY: ${{ inputs.oci-repository }}
+        ARCH: ${{ inputs.arch }}
